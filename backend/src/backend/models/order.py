@@ -5,11 +5,11 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base, UUIDMixin, TimestampMixin
+from models.base import Base, UUIDMixin, TimestampMixin
 
 if TYPE_CHECKING:
-    from backend.models.user import User
-    from backend.models.menu import Menu
+    from models.user import User
+    from models.menu import Menu
 
 
 class BillStatus(str, enum.Enum):
