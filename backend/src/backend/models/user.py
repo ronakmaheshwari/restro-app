@@ -1,12 +1,12 @@
 import enum
-from models.base import Base, TimestampMixin, UUIDMixin
+from backend.models.base import Base, TimestampMixin, UUIDMixin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Enum as SAEnum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from models.menu import Menu
-    from models.order import Order
+    from backend.models.menu import Menu
+    from backend.models.order import Order
 
 class Status(str, enum.Enum):
     ACTIVE = "ACTIVE"

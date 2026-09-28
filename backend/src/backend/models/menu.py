@@ -1,12 +1,12 @@
 import enum
 from sqlalchemy import String, Integer, ForeignKey, Text, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base, UUIDMixin, TimestampMixin
+from backend.models.base import Base, UUIDMixin, TimestampMixin
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from models.user import User
-    from models.order import OrderItem
+    from backend.models.user import User
+    from backend.models.order import OrderItem
     
 class Menu_status(str, enum.Enum):
     ACTIVE = "ACTIVE"
