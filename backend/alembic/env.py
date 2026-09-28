@@ -39,7 +39,6 @@ async def ensure_database_exists() -> None:
             await conn.exec_driver_sql(f'CREATE DATABASE "{database}"')
     await admin_engine.dispose()
 
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
