@@ -27,6 +27,7 @@ class User(Base, UUIDMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String)
     user_status: Mapped[Status] = mapped_column(SAEnum(Status), default=Status.ACTIVE)
     role: Mapped[Role] = mapped_column(SAEnum(Role), default=Role.USER)
+    password: Mapped[str] = mapped_column(String)
     menu: Mapped["Menu | None"] = relationship (
         back_populates="admin"
     )
