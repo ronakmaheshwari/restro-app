@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 import enum
+from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
 
 class RoleEnum(str, enum.Enum):
     USER = "USER"
@@ -8,25 +9,25 @@ class RoleEnum(str, enum.Enum):
     MANAGER = "MANAGER"
     WAITER = "WAITER"
 
-class create_user(BaseModel):
-    email: str
-    name: str
+class CreateUser(BaseModel):
+    email: EmailStr
+    name: str = Field(min_length=2, max_length=20)
     role: RoleEnum
+    password: str = Field(min_length=8, max_length=64)
+
+class LoginUser(BaseModel):
+    email: EmailStr
     password: str
 
-class login_user_data(BaseModel):
-    email: str
-    password: str
+class UpdateUser(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=2, max_length=20)
+    role: Optional[RoleEnum] = None
+    password: Optional[str] = Field(default=None, min_length=8, max_length=64)
 
-class update_user_data(BaseModel):
-    name: str | None = None
-    role: RoleEnum | None = None
-    password: str | None = None
-
-class edit_user(BaseModel):
-    name: str
+class EditUser(BaseModel):
+    name: str = Field(min_length=2, max_length=20)
     role: RoleEnum
-    password: str
+    password: str = Field(min_length=8, max_length=64)
 
-class delete_user(BaseModel):
-    id: str
+class DeleteUser(BaseModel):
+    id: str = Field(description="The unique identifier/UUID of the user to delete")

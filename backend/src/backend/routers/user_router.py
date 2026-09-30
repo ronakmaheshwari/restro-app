@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from backend.schemas.user_validation import create_user, login_user_data, update_user_data
+from backend.schemas.user_validation import CreateUser, LoginUser, UpdateUser
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from backend.core.database import get_db
@@ -14,7 +14,7 @@ db_session = Annotated[AsyncSession, Depends(get_db)]
 
 
 @user_router.post("/signup")
-async def get_signup(data: create_user, db: db_session):
+async def get_signup(data: CreateUser, db: db_session):
     try:
         user = await db.scalar(select(DBUser).where(DBUser.email == data.email))
         if user:
@@ -57,7 +57,7 @@ async def get_signup(data: create_user, db: db_session):
 
 
 @user_router.post("/login")
-async def login_user(data: login_user_data, db: db_session):
+async def login_user(data: LoginUser, db: db_session):
     try:
         user = await db.scalar(select(DBUser).where(DBUser.email == data.email))
 
@@ -114,17 +114,31 @@ async def get_user_details(db: db_session, user_id: str = Depends(get_current_us
                 },
                 status_code=status.HTTP_404_NOT_FOUND,
             )
+
+        user_role: str | None = None
+        user_status: str | None = None
+
+        if user.role:
+            user_role = user.role.value
+        else:
+            user_role = None
+
+        if user.user_status:
+            user_status = user.user_status.value
+        else:
+            user_status = None
+        
         return JSONResponse(
             content={
                 "success": True,
                 "message": f"The given user successfully fetched",
                 "data": {
-                    "id": user.id,
+                    "id": str(user.id),
                     "name": user.name,
                     "email": user.email,
-                    "role": user.role,
-                    "user_status": user.user_status,
-                    "created_at": user.created_at,
+                    "role": user_role,
+                    "user_status": user_status,
+                    "created_at": user.created_at.isoformat(),
                 },
             },
             status_code=status.HTTP_200_OK
@@ -141,7 +155,7 @@ async def get_user_details(db: db_session, user_id: str = Depends(get_current_us
 
 
 @user_router.patch("/edit")
-async def update_user(db: db_session, data: update_user_data, user_id: str = Depends(get_current_user)):
+async def update_user(db: db_session, data: UpdateUser, user_id: str = Depends(get_current_user)):
     try:
         user = await db.get(DBUser, user_id)
         if user == None:
@@ -162,12 +176,12 @@ async def update_user(db: db_session, data: update_user_data, user_id: str = Dep
                 "success": True,
                 "message": f"The given user successfully fetched",
                 "data": {
-                    "id": user.id,
+                    "id": str(user.id),
                     "name": user.name,
                     "email": user.email,
-                    "role": user.role,
-                    "user_status": user.user_status,
-                    "created_at": user.created_at,
+                    "role": user.role.value if user.role else None,
+                    "user_status": user.user_status.value if user.user_status else None,
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
                 },
             },
             status_code=status.HTTP_200_OK

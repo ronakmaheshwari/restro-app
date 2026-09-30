@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from core.config import settings
+from backend.core.config import settings
 
 def create_access_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
