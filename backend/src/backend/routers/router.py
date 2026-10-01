@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from backend.routers.user_router import user_router
 from backend.routers.menu_router import menu_router
+from backend.routers.order_router import order_router
 from typing import TypedDict
 
 
@@ -21,6 +22,11 @@ all_routers: list[RouterConfig] = [
         "path": "/menu",
         "router": menu_router,
         "tags": ["menu"]
+    },
+    {
+        "path": "/orders",
+        "router": order_router,
+        "tags": ["orders"]
     }
 ]
 
