@@ -1,11 +1,19 @@
 import './App.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/home';
+const queryClient = new QueryClient()
 
 function App() {
 
   return (
-    <div className='flex min-w-screen min-h-screen overflow-hidden justify-center items-center'>
-      <h1 className='w-52 h-28 bg-amber-500 p-2'>Ronak Maheshwari</h1>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          <Route path="/home" element={<Home />}/>
+        </Routes>
+      </Router>
+    </QueryClientProvider>
   )
 }
 
