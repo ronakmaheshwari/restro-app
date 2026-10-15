@@ -7,6 +7,8 @@ from backend.utils.auth.dependancy import get_current_user
 from fastapi.responses import JSONResponse
 from backend.schemas.menu_validation import DishQuery, AddDish, EditDish
 from sqlalchemy import select
+from backend.core.redis import r
+from backend.utils.menu_cache import MENU_CACHE_KEY
 
 menu_router = APIRouter()
 db_session = Annotated[AsyncSession, Depends(get_db)]
@@ -19,6 +21,16 @@ async def get_menu(
     q: Annotated[DishQuery, Depends()] = DishQuery(),
 ):
     try:
+        if q is None:
+            cached = await r.get(MENU_CACHE_KEY)
+            if cached is not None:
+                return JSONResponse(
+                            content={
+                                "success": True,
+                                "message": f"The menu was successfully fetched",
+                                "data": cached,
+                            }
+                        )
         stmt = select(DBMenu)
         if q.name:
             stmt = stmt.where(DBMenu.name.ilike(f"%{q.name}%"))

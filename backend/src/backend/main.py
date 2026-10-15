@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,6 +8,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.database import SessionLocal, get_db
 from backend.routers.router import router
+from backend.core.scheduler import start_scheduler, stop_scheduler
+from backend.core.redis import r
 
 def main():
     uvicorn.run(
@@ -15,8 +18,21 @@ def main():
         reload=True
     )
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    from backend.utils.menu_cache import refresh_menu_items
+    await refresh_menu_items()
+    try:
+        yield
+    finally:
+        stop_scheduler()
+        await r.aclose()
+
+app = FastAPI(lifespan=lifespan)
 db_session = Annotated[AsyncSession, Depends(get_db)]
+
+
 
 app.add_middleware(
     CORSMiddleware,

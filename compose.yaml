@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - "restro-app:/var/lib/postgresql:rw"
+    networks:
+      - "restro-app"
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    depends_on:
+      - postgres
+    volumes:
+      - "restro-redis:/data"
+    networks:
+      - "restro-app"
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:mysecretpassword@postgres:5432/restro-app
+    networks:
+      - "restro-app"
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - "restro-app"
+volumes:
+  restro-app:
+  restro-redis:
+
+networks:
+  restro-app:

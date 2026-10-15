@@ -4,7 +4,7 @@ import json
 import logging
 from backend.core.config import settings
 from sqlalchemy import select
-from backend.core.database import AsyncSessionLocal
+from backend.core.database import SessionLocal
 from backend.core.redis import r
 
 MENU_CACHE_KEY = "menu:all"
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 async def refresh_menu_items():
     try:
-        async with AsyncSessionLocal() as db:
+        async with SessionLocal() as db:
             result = await db.execute(select(DBMenu))
             all_menu = result.scalars().all()
 
@@ -26,7 +26,7 @@ async def refresh_menu_items():
             ]
 
             payload = json.dumps(menu_data,default=str)
-            await r.set(MENU_CACHE_KEY, payload, MENU_CACHE_TTL)
+            await r.set(MENU_CACHE_KEY, payload, ex=MENU_CACHE_TTL)
         logger.info("Menu cache refreshed: %s records", len(menu_data))
     except Exception as error:
         logger.exception(f"Failed to refresh menu cache: {error}")

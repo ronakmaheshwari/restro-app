@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 30
     redis_host: str | None = "localhost"
     redis_port: int = 6379
-    redis_password: str | None
+    redis_password: str | None = None
     cache_ttl: int = 600
 
     class Config:

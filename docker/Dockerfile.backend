@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+# python image doesn't ship uv - grab the official binary
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /backend
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH="/backend/.venv/bin:$PATH"
+
+# Deps first for layer caching.
+# Build context is the repo root (see compose.yaml):
+#   docker build -f docker/Dockerfile.backend .
+COPY backend/pyproject.toml backend/uv.lock backend/README.md ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+# App source (src layout: src/backend/main.py -> module backend.main)
+COPY backend/src ./src
+COPY backend/alembic ./alembic
+COPY backend/alembic.ini ./alembic.ini
+RUN uv sync --frozen --no-dev
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

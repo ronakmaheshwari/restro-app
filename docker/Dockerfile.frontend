@@ -1,0 +1,11 @@
+FROM node:alpine
+WORKDIR /frontend
+
+COPY frontend/package.json frontend/vite.config.ts frontend/components.json frontend/tsconfig.json frontend/tsconfig.app.json ./
+RUN npm install
+
+COPY frontend/. .
+RUN npm run build
+
+EXPOSE 5173 5173
+CMD [ "npm", "run","dev" ]

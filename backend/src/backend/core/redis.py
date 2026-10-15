@@ -1,10 +1,10 @@
-import redis
+import redis.asyncio as redis
 from backend.core.config import settings
 
-r = redis.Redis(host={settings.redis_host}, port={settings.redis_port}, db=0)
-
-try:
-    if r.ping():
-        print("Connected to Redis successfully!")
-except redis.ConnectionError:
-    print("Could not connect to Redis server.")
+r = redis.Redis(
+    host=settings.redis_host,
+    port=settings.redis_port,
+    password=settings.redis_password,
+    db=0,
+    decode_responses=True,
+)
