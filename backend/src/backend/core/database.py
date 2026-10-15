@@ -53,7 +53,4 @@ SessionLocal = async_sessionmaker(
 
 async def get_db():
     async with SessionLocal() as session:
-        try:
-            yield session
-        finally:
-            session.close_all()
+        yield session

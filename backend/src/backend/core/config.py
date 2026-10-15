@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_algorithm: str
     jwt_expire_minutes: int = 30
+    redis_host: str | None = "localhost"
+    redis_port: int = 6379
+    redis_password: str | None
+    cache_ttl: int = 600
 
     class Config:
         env_file = ".env"
