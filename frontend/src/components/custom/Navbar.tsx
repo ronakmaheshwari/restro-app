@@ -1,148 +1,90 @@
-import { Link } from "react-router-dom";
-import { ForkKnifeIcon } from "@phosphor-icons/react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { ForkKnifeIcon, SignOutIcon } from "@phosphor-icons/react";
 import { Button } from "../ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
+import { cn } from "@/lib/utils";
 
-const menuCategories = [
-  {
-    title: "Starters",
-    href: "/menu#starters",
-    description: "Small plates, soups and appetizers to begin with.",
-  },
-  {
-    title: "Main Course",
-    href: "/menu#mains",
-    description: "Signature mains, thalis, biryanis and chef specials.",
-  },
-  {
-    title: "Desserts",
-    href: "/menu#desserts",
-    description: "Sweet endings — cakes, kulfi, ice creams and more.",
-  },
-  {
-    title: "Beverages",
-    href: "/menu#beverages",
-    description: "Coffee, mocktails, shakes and fresh juices.",
-  },
+const links = [
+    { to: "/menu", label: "Menu" },
+    { to: "/orders", label: "Orders" },
+    { to: "/cart", label: "Cart" },
+    { to: "/profile", label: "Profile" },
 ];
 
-const exploreLinks = [
-  {
-    title: "Our Story",
-    href: "/about",
-    description: "Know the kitchen and people behind Restro.",
-  },
-  {
-    title: "Reservations",
-    href: "/reservations",
-    description: "Book a table for lunch, dinner or events.",
-  },
-  {
-    title: "Contact",
-    href: "/contact",
-    description: "Find us, call us, or send feedback.",
-  },
-];
+const linkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+        "rounded-full px-4 py-2 text-[13px] font-semibold transition-colors",
+        isActive
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+    );
 
 export const Navbar = () => {
-  return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-2">
-        <Link to="/home" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <ForkKnifeIcon className="size-5" weight="bold" />
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight">Restro</span>
-            <span className="text-[11px] font-medium text-muted-foreground">
-              Eat. Enjoy. Repeat.
-            </span>
-          </span>
-        </Link>
+    const token = useAuthStore((s) => s.token);
+    const logout = useAuthStore((s) => s.logout);
+    const navigate = useNavigate();
 
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-1 p-1 md:w-[500px] md:grid-cols-2">
-                  {menuCategories.map((item) => (
-                    <li key={item.title}>
-                      <NavigationMenuLink href={item.href}>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-semibold">
-                            {item.title}
-                          </span>
-                          <span className="text-xs font-normal text-muted-foreground">
-                            {item.description}
-                          </span>
-                        </div>
-                      </NavigationMenuLink>
-                    </li>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+    return (
+        <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/85 backdrop-blur-md">
+            <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+                <Link to="/home" className="flex shrink-0 items-center gap-3">
+                    <span className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm shadow-primary/30">
+                        <ForkKnifeIcon className="size-5" weight="bold" />
+                    </span>
+                    <span className="flex flex-col leading-none">
+                        <span className="font-display text-xl font-semibold tracking-tight">
+                            Restro
+                        </span>
+                        <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
+                            Seasonal kitchen
+                        </span>
+                    </span>
+                </Link>
 
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Explore</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-1 p-1">
-                  {exploreLinks.map((item) => (
-                    <li key={item.title}>
-                      <NavigationMenuLink href={item.href}>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-semibold">
-                            {item.title}
-                          </span>
-                          <span className="text-xs font-normal text-muted-foreground">
-                            {item.description}
-                          </span>
-                        </div>
-                      </NavigationMenuLink>
-                    </li>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+                {token && (
+                    <nav className="hidden items-center gap-1 md:flex">
+                        {links.map((l) => (
+                            <NavLink key={l.to} to={l.to} className={linkClass}>
+                                {l.label}
+                            </NavLink>
+                        ))}
+                    </nav>
+                )}
 
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/reservations"
-                className={navigationMenuTriggerStyle()}
-              >
-                Reservations
-              </NavigationMenuLink>
-            </NavigationMenuItem>
+                <div className="flex shrink-0 items-center gap-2">
+                    {token ? (
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                logout();
+                                navigate("/login", { replace: true });
+                            }}
+                        >
+                            <SignOutIcon className="size-4" />
+                            Logout
+                        </Button>
+                    ) : (
+                        <>
+                            <Link to="/login">
+                                <Button variant="ghost">Log in</Button>
+                            </Link>
+                            <Link to="/signup">
+                                <Button>Sign up</Button>
+                            </Link>
+                        </>
+                    )}
+                </div>
+            </div>
 
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/contact"
-                className={navigationMenuTriggerStyle()}
-              >
-                Contact
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Button>
-            Sign up
-          </Button>
-          <Button>
-            Login
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
+            {token && (
+                <nav className="flex items-center gap-1 overflow-x-auto border-t border-border/60 px-4 py-2 md:hidden">
+                    {links.map((l) => (
+                        <NavLink key={l.to} to={l.to} className={linkClass}>
+                            {l.label}
+                        </NavLink>
+                    ))}
+                </nav>
+            )}
+        </header>
+    );
 };

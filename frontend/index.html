@@ -4,10 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta name="theme-color" content="#faf7f2" />
+    <meta
+      name="description"
+      content="Restro — a seasonal kitchen. Browse the menu, order in seconds, and track every plate."
+    />
+    <title>Restro · Seasonal Kitchen</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Nginx runtime env injection (generated at container start).
+         Safe to 404 in `vite dev` — api.ts falls back to import.meta.env. -->
+    <script src="/env.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
