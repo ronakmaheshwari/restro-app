@@ -8,11 +8,18 @@ from fastapi.responses import JSONResponse
 from backend.schemas.menu_validation import DishQuery, AddDish, EditDish
 from sqlalchemy import select
 from backend.core.redis import r
-from backend.utils.menu_cache import MENU_CACHE_KEY
+from backend.utils.menu_cache import (
+    MENU_CACHE_TTL,
+    get_menu_version,
+    menu_cache_key_helper,
+    invalidate_menu_cache,
+)
+import logging
+import json
 
 menu_router = APIRouter()
 db_session = Annotated[AsyncSession, Depends(get_db)]
-
+logger = logging.getLogger(__name__)
 
 @menu_router.get("/")
 async def get_menu(
@@ -21,16 +28,22 @@ async def get_menu(
     q: Annotated[DishQuery, Depends()] = DishQuery(),
 ):
     try:
-        if q is None:
-            cached = await r.get(MENU_CACHE_KEY)
+        version = None
+        try:
+            version = await get_menu_version()
+            hash = menu_cache_key_helper(q, version)
+            cached = await r.get(hash)
             if cached is not None:
                 return JSONResponse(
-                            content={
-                                "success": True,
-                                "message": f"The menu was successfully fetched",
-                                "data": cached,
-                            }
-                        )
+                    content={
+                        "success": True,
+                        "message": "The menu was successfully fetched from cache",
+                        "data": json.loads(cached),
+                    },
+                    status_code=status.HTTP_200_OK
+                )
+        except Exception:
+            logger.exception("Menu cache read failure")
         stmt = select(DBMenu)
         if q.name:
             stmt = stmt.where(DBMenu.name.ilike(f"%{q.name}%"))
@@ -76,6 +89,12 @@ async def get_menu(
             for dish in all_menu
         ]
 
+        if version is not None:
+            try: 
+                await r.set(menu_cache_key_helper(q, version), json.dumps(data), ex=MENU_CACHE_TTL)
+            except Exception:
+                logger.exception("Menu cache write failed")
+
         return JSONResponse(
             content={
                 "success": True,
@@ -113,8 +132,7 @@ async def add_dish(
             )
 
         if findDish and findDish.is_deleted == True:
-            delete_dish = await db.delete(DBMenu, findDish.id)
-            await db.delete(delete_dish)
+            await db.delete(findDish)
             await db.commit()
 
         added_dish = DBMenu(
@@ -127,6 +145,7 @@ async def add_dish(
         db.add(added_dish)
         await db.commit()
         await db.refresh(added_dish)
+        await invalidate_menu_cache()
 
         return JSONResponse(
             content={
@@ -191,6 +210,8 @@ async def edit_dish(
             setattr(find_dish, fields, value)
         await db.commit()
         await db.refresh(find_dish)
+        await invalidate_menu_cache()
+
         return JSONResponse(
             content={
                 "success": True,
@@ -245,6 +266,8 @@ async def delete_dish(
             )
         find_dish.is_deleted = True
         await db.commit()
+        await invalidate_menu_cache()
+
         return JSONResponse(
             content={
                 "success": True,
